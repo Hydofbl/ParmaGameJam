@@ -7,7 +7,7 @@ public class Gun : MonoBehaviour {
     Transform cam;
     [SerializeField] PlayerMovement playerMovement;
     [Header("LayerMasks")]
-    [SerializeField] private LayerMask teleportableLayer;
+    [SerializeField] private string teleportableLayerName;
     [SerializeField] private LayerMask pullableObjectLayer;
 
     [Header("General Stats")]
@@ -60,12 +60,18 @@ public class Gun : MonoBehaviour {
     {
         RaycastHit hit;
         Vector3 shootingDir = GetShootingDirection();
-        if (Physics.Raycast(cam.position, shootingDir, out hit, range, teleportableLayer))
+        if (Physics.Raycast(cam.position, shootingDir, out hit, range))
         {
-            Debug.Log("Hit Teleportable");
-            playerMovement.Teleport(hit.point + hit.normal * offsetDistance);
-
-            ChangeMatColor(mRTeleport, Color.red);
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer(teleportableLayerName))
+            {
+                Debug.Log("Hit Teleportable");
+                playerMovement.Teleport(hit.point + hit.normal * offsetDistance);
+                ChangeMatColor(mRTeleport, Color.red);
+            }
+            else
+            {
+                Debug.Log("Other obstacles - " + hit.collider.gameObject.layer);
+            }
         }
         else
         {
@@ -120,7 +126,8 @@ public class Gun : MonoBehaviour {
 
     IEnumerator Reload()
     {
-        if (canTeleport) {
+        if (canTeleport) 
+        {
             yield return null;
         }
         print("reloading...");
