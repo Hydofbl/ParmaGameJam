@@ -1,21 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour {
-#pragma warning disable 649
-
-    [SerializeField] Movement movement;
-    [SerializeField] MouseLook mouseLook;
+    [SerializeField] PlayerMovement playerMovement;
     [SerializeField] Gun gun;
 
     PlayerControls controls;
     PlayerControls.PlayerInputActions playerInput;
 
-    Vector2 horizontalInput;
+    Vector2 movementInput;
     Vector2 mouseInput;
+    bool isMoving;
 
     Coroutine fireCoroutine;
-    Coroutine pullCoroutine;
 
     private void Awake ()
     {
@@ -23,9 +21,9 @@ public class InputManager : MonoBehaviour {
         playerInput = controls.PlayerInput;
 
         // groundMovement.[action].performed += context => do something
-        playerInput.HorizontalMovement.performed += ctx => horizontalInput = ctx.ReadValue<Vector2>();
+        playerInput.HorizontalMovement.performed += ctx => movementInput = ctx.ReadValue<Vector2>();
 
-        playerInput.Jump.performed += _ => movement.OnJumpPressed();
+        playerInput.Jump.performed += _ => playerMovement.OnJumpPressed();
 
         playerInput.MouseX.performed += ctx => mouseInput.x = ctx.ReadValue<float>();
         playerInput.MouseY.performed += ctx => mouseInput.y = ctx.ReadValue<float>();
@@ -33,14 +31,19 @@ public class InputManager : MonoBehaviour {
         playerInput.Shoot.started += _ => StartFiring();
         playerInput.Shoot.canceled += _ => StopFiring();
 
-        playerInput.Pull.started += _ => StartPulling();
-        playerInput.Pull.canceled += _ => StopPulling();
+        playerInput.Pull.started += _ => StartPickingUp();
+    }
+
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void Update ()
     {
-        movement.ReceiveInput(horizontalInput);
-        mouseLook.ReceiveInput(mouseInput);
+        playerMovement.ReceiveMovementInput(movementInput);
+        playerMovement.ReceiveMouseInput(mouseInput);
     }
 
     void StartFiring()
@@ -55,17 +58,9 @@ public class InputManager : MonoBehaviour {
         }
     }
 
-    void StartPulling()
+    void StartPickingUp()
     {
-        gun.PullObject();
-    }
-
-    void StopPulling()
-    {
-        if (pullCoroutine != null)
-        {
-            StopCoroutine(pullCoroutine);
-        }
+        gun.PickUp();
     }
 
     private void OnEnable ()

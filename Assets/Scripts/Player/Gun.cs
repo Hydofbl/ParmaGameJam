@@ -5,7 +5,7 @@ using System.Threading;
 public class Gun : MonoBehaviour {
 
     Transform cam;
-    [SerializeField] Movement movement;
+    [SerializeField] PlayerMovement playerMovement;
     [Header("LayerMasks")]
     [SerializeField] private LayerMask teleportableLayer;
     [SerializeField] private LayerMask pullableObjectLayer;
@@ -17,14 +17,21 @@ public class Gun : MonoBehaviour {
     [SerializeField] float offsetDistance = 1.5f;
 
     [Header("TeleportLaser")]
-    [SerializeField] GameObject laser;
+    [SerializeField] MeshRenderer mRTeleport;
     [SerializeField] Transform muzzle;
-    [SerializeField] float fadeDuration = 0.3f;
-    [SerializeField] float destroyDuration = 0.8f;
     [SerializeField] bool canTeleport;
 
     [Header("Pulling")]
-    [SerializeField] bool canPull;
+    [Header("Pickup Settings")]
+    [SerializeField] MeshRenderer mRPickup;
+    [SerializeField] bool canPickup;
+    [SerializeField] Transform holdArea;
+    private GameObject heldObj;
+    private Rigidbody heldRB;
+
+    [Header("Physics Parameters")]
+    [SerializeField] private float pickupRange = 5.0f;
+    [SerializeField] private float pickupForce = 150.0f;
 
     private void Awake ()
     {
@@ -34,7 +41,19 @@ public class Gun : MonoBehaviour {
 
     private void Start()
     {
+        ChangeMatColor(mRPickup, Color.green);
+        ChangeMatColor(mRTeleport, Color.green);
         canTeleport = true;
+        canPickup = true;
+    }
+
+    private void Update()
+    {
+        if (heldObj != null)
+        {
+            // MoveObject
+            MoveObject();
+        }
     }
 
     public void ShootTeleport ()
@@ -44,34 +63,47 @@ public class Gun : MonoBehaviour {
         if (Physics.Raycast(cam.position, shootingDir, out hit, range, teleportableLayer))
         {
             Debug.Log("Hit Teleportable");
-            CreateLaser(hit.point); 
-            movement.Teleport(hit.point + hit.normal * offsetDistance);
+            playerMovement.Teleport(hit.point + hit.normal * offsetDistance);
+
+            ChangeMatColor(mRTeleport, Color.red);
         }
         else
         {
             Debug.Log("Didn't hit");
-            CreateLaser(cam.position + shootingDir * range);
+            //CreateLaser(cam.position + shootingDir * range);
         }
 
         canTeleport = false;
     }
 
-    public void Pull()
+    public void PickUp()
     {
-        RaycastHit hit;
-        Vector3 shootingDir = GetShootingDirection();
-        if (Physics.Raycast(cam.position, shootingDir, out hit, range, pullableObjectLayer))
+        if (heldObj == null)
         {
-            Debug.Log("Hit Pullable");
-            CreateLaser(hit.point);
+            RaycastHit hit;
+            if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, pickupRange, pullableObjectLayer))
+            {
+                // Pickup
+                PickupObject(hit.transform.gameObject);
 
+                canPickup = false;
+                canTeleport = false;
+
+                ChangeMatColor(mRPickup, Color.red);
+                ChangeMatColor(mRTeleport, Color.red);
+            }
         }
         else
         {
-            Debug.Log("Didn't hit");
-        }
+            // Drop
+            DropObject();
 
-        canTeleport = false;
+            canPickup = true;
+            canTeleport = true;
+
+            ChangeMatColor(mRPickup, Color.green);
+            ChangeMatColor(mRTeleport, Color.green);
+        }
     }
 
     public IEnumerator FireTeleport()
@@ -86,18 +118,6 @@ public class Gun : MonoBehaviour {
         }
     }
 
-    public IEnumerator PullObject()
-    {
-        if (canPull)
-        {
-
-        }
-        else
-        {
-            yield return null;
-        }
-    }
-
     IEnumerator Reload()
     {
         if (canTeleport) {
@@ -105,7 +125,9 @@ public class Gun : MonoBehaviour {
         }
         print("reloading...");
         yield return reloadWait;
-        canTeleport = true; ;
+        canTeleport = true;
+
+        ChangeMatColor(mRTeleport, Color.green);
         print("finished reloading");
         yield return null;
     }
@@ -118,24 +140,41 @@ public class Gun : MonoBehaviour {
         return direction.normalized;
     }
 
-    void CreateLaser(Vector3 end)
+    void PickupObject(GameObject pickObj)
     {
-        GameObject laserObj = Instantiate(laser);
-        LineRenderer lr = laserObj.GetComponent<LineRenderer>();
-        lr.SetPositions(new Vector3[2] { muzzle.position, end });
-        StartCoroutine(FadeLaser(lr));
-        Destroy(laserObj, destroyDuration);
+        if (pickObj.GetComponent<Rigidbody>())
+        {
+            heldRB = pickObj.GetComponent<Rigidbody>();
+            heldRB.useGravity = false;
+            heldRB.drag = 10;
+            heldRB.constraints = RigidbodyConstraints.FreezeRotation;
+
+            heldRB.transform.parent = holdArea;
+            heldObj = pickObj;
+        }
     }
 
-    IEnumerator FadeLaser(LineRenderer lr)
+    void MoveObject()
     {
-        float alpha = 1;
-        while (alpha > 0) {
-            alpha -= Time.deltaTime / fadeDuration;
-            lr.startColor = new Color(lr.startColor.r, lr.startColor.g, lr.startColor.b, alpha);
-            lr.endColor = new Color(lr.endColor.r, lr.endColor.g, lr.endColor.b, alpha);
-            yield return null;
+        if (Vector3.Distance(heldObj.transform.position, holdArea.position) > 0.1f)
+        {
+            Vector3 moveDir = (holdArea.position - heldObj.transform.position);
+            heldRB.AddForce(moveDir * pickupForce);
         }
-        Destroy(lr);
+    }
+
+    void DropObject()
+    {
+        heldRB.useGravity = true;
+        heldRB.drag = 1;
+        heldRB.constraints = RigidbodyConstraints.None;
+
+        heldObj.transform.parent = null;
+        heldObj = null;
+    }
+
+    void ChangeMatColor(MeshRenderer mr, Color color)
+    {
+        mr.material.color = color;
     }
 }
