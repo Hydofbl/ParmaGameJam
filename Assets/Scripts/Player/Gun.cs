@@ -32,9 +32,11 @@ public class Gun : MonoBehaviour {
     private Rigidbody heldRB;
 
     [Header("KeyBall")]
+    [SerializeField] private Animator GunBallHolderAnim;
     [SerializeField] GameObject keyBallPref;
     [SerializeField] float ballShootSpeed = 1f;
     [SerializeField] bool canGetKeyBall;
+    [SerializeField] bool isHoldingObject;
 
     [Header("Physics Parameters")]
     [SerializeField] private float pickupRange = 5.0f;
@@ -57,6 +59,7 @@ public class Gun : MonoBehaviour {
         ChangeMatColor(mRTeleport, Color.green);
         canTeleport = true;
         canGetKeyBall = true;
+        isHoldingObject = false;
     }
 
     private void Update()
@@ -111,6 +114,8 @@ public class Gun : MonoBehaviour {
         keyBallObj.GetComponent<Rigidbody>().AddForce(ray.direction * ballShootSpeed, ForceMode.Impulse);
 
         canGetKeyBall = true;
+        isHoldingObject = false;
+
         ChangeMatColor(mRPickup, Color.white);
     }
 
@@ -131,6 +136,7 @@ public class Gun : MonoBehaviour {
                         PickupObject(hit.transform.gameObject);
 
                         canTeleport = false;
+                        isHoldingObject = true;
 
                         ChangeMatColor(mRTeleport, Color.red);
                     }
@@ -156,6 +162,8 @@ public class Gun : MonoBehaviour {
                             Destroy(hitObj);
                             // Set Animations
                         }
+
+                        isHoldingObject = true;
                     }
                     else if (hitObj.CompareTag("KeyBall") && !canGetKeyBall)
                     {
@@ -170,9 +178,11 @@ public class Gun : MonoBehaviour {
             DropObject();
 
             canTeleport = true;
+            isHoldingObject = false;
 
             ChangeMatColor(mRTeleport, Color.green);
         }
+        GunBallHolderAnim.SetBool("isHoldingObject", isHoldingObject);
     }
 
     public IEnumerator FireTeleport()
