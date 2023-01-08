@@ -142,7 +142,6 @@ public class Gun : MonoBehaviour {
                     }
                     else if (hitObj.CompareTag("KeyBall") && canGetKeyBall)
                     {
-
                         if (hitObj.GetComponent<KeyBallChecker>().onKeyHole)
                         {
                             KeyHole keyHoleScr = hitObj.transform.GetComponentInParent<KeyHole>();
@@ -152,6 +151,7 @@ public class Gun : MonoBehaviour {
                                 canGetKeyBall = false;
                                 ChangeMatColor(mRPickup, Color.blue);
                                 keyHoleScr.getKeyBall();
+                                isHoldingObject = true;
                             }
                         }
                         else
@@ -160,10 +160,9 @@ public class Gun : MonoBehaviour {
                             canGetKeyBall = false;
                             ChangeMatColor(mRPickup, Color.blue);
                             Destroy(hitObj);
+                            isHoldingObject = true;
                             // Set Animations
                         }
-
-                        isHoldingObject = true;
                     }
                     else if (hitObj.CompareTag("KeyBall") && !canGetKeyBall)
                     {

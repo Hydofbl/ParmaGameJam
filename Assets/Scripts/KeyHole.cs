@@ -5,36 +5,29 @@ using UnityEngine;
 public class KeyHole : MonoBehaviour
 {
     [SerializeField] private DoorController doorController;
-    [SerializeField] private Material transparentMat;
-    [SerializeField] private Material opaqueMat;
-    [SerializeField] private MeshRenderer mRBall;
+    [SerializeField] private GameObject keyBall;
     private bool _isActive;
 
     public bool IsActive => _isActive;
 
-    private void Start()
-    {
-        mRBall.material = transparentMat;
-    }
-
     public void getKeyBall()
     {
-        KeyHoleTrigger(false, transparentMat);
+        KeyHoleTrigger(false);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("KeyBall") && !_isActive)
         {
-            KeyHoleTrigger(true, opaqueMat);
+            KeyHoleTrigger(true);
             Destroy(other.gameObject);
         }
     }
 
-    void KeyHoleTrigger(bool activity, Material mat)
+    void KeyHoleTrigger(bool activity)
     {
         _isActive = activity;
-        mRBall.material = mat;
+        keyBall.SetActive(activity);
         doorController.CheckDoor();
     }
 }

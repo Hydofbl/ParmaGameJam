@@ -916,9 +916,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   doorController: {fileID: 0}
-  transparentMat: {fileID: 2100000, guid: 0fefa49f49e469e438b4936a058dd310, type: 2}
-  opaqueMat: {fileID: 2100000, guid: b51608a39ba1f1d4192bf73cc253674e, type: 2}
-  mRBall: {fileID: 4311267084872116458}
+  keyBall: {fileID: 4311267084872116463}
 --- !u!1 &4311267084872116463
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7063497004558795552}
   - component: {fileID: 7063497004558795553}
   - component: {fileID: 7063497004558795558}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -113,7 +113,7 @@ GameObject:
   - component: {fileID: 7063497005860506928}
   - component: {fileID: 7063497005860506926}
   - component: {fileID: 7063497005860506921}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Gate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,7 +127,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7063497005860506929}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -17.779055, y: 0.5, z: 28.68}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -829,7 +829,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 1273
+  m_VersionIndex: 1279
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -979,7 +979,7 @@ GameObject:
   - component: {fileID: 7063497005971302413}
   - component: {fileID: 7063497005971302418}
   - component: {fileID: 7063497005971302419}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
