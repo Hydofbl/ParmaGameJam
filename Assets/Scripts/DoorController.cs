@@ -26,9 +26,10 @@ public class DoorController : MonoBehaviour
                 if (!pressurePlate.IsPressed)
                     return false;
             }
-            else
+            else if(obj.TryGetComponent(out KeyHole keyHole))
             {
-                // ... Ball component için de doldurulacak.
+                if (!keyHole.IsActive)
+                    return false;
             }
         }
 

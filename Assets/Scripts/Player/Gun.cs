@@ -1,14 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Threading;
+using UnityEngine.UI;
 
 public class Gun : MonoBehaviour {
 
-    Transform cam;
+    Camera cam => Camera.main;
+    Transform camTransform => cam.transform;
     [SerializeField] PlayerMovement playerMovement;
+    [SerializeField] Image crosshair;
     [Header("LayerMasks")]
     [SerializeField] private string teleportableLayerName;
-    [SerializeField] private LayerMask pullableObjectLayer;
+    [SerializeField] private string pullableObjectLayer;
 
     [Header("General Stats")]
     [SerializeField] float range = 50f;
@@ -21,30 +24,39 @@ public class Gun : MonoBehaviour {
     [SerializeField] Transform muzzle;
     [SerializeField] bool canTeleport;
 
-    [Header("Pulling")]
     [Header("Pickup Settings")]
+    [Header("Cube")]
     [SerializeField] MeshRenderer mRPickup;
-    [SerializeField] bool canPickup;
     [SerializeField] Transform holdArea;
     private GameObject heldObj;
     private Rigidbody heldRB;
+
+    [Header("KeyBall")]
+    [SerializeField] GameObject keyBallPref;
+    [SerializeField] float ballShootSpeed = 1f;
+    [SerializeField] bool canGetKeyBall;
 
     [Header("Physics Parameters")]
     [SerializeField] private float pickupRange = 5.0f;
     [SerializeField] private float pickupForce = 150.0f;
 
+
+    float xScreen = Screen.width / 2;
+    float yScreen = Screen.height / 2;
+
+    Ray ray => cam.ScreenPointToRay(new Vector3(xScreen, yScreen, 0));
+
     private void Awake ()
     {
-        cam = Camera.main.transform;
         reloadWait = new WaitForSeconds(reloadTime);
     }
 
     private void Start()
     {
-        ChangeMatColor(mRPickup, Color.green);
+        ChangeMatColor(mRPickup, Color.white);
         ChangeMatColor(mRTeleport, Color.green);
         canTeleport = true;
-        canPickup = true;
+        canGetKeyBall = true;
     }
 
     private void Update()
@@ -54,13 +66,21 @@ public class Gun : MonoBehaviour {
             // MoveObject
             MoveObject();
         }
+
+        if (Physics.Raycast(camTransform.position, ray.direction, out RaycastHit hit, pickupRange))
+        {
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer(pullableObjectLayer))
+                crosshair.color = Color.blue;
+            else
+                crosshair.color = Color.white;
+        }
     }
 
     public void ShootTeleport ()
     {
         RaycastHit hit;
         Vector3 shootingDir = GetShootingDirection();
-        if (Physics.Raycast(cam.position, shootingDir, out hit, range))
+        if (Physics.Raycast(camTransform.position, shootingDir, out hit, range))
         {
             if (hit.collider.gameObject.layer == LayerMask.NameToLayer(teleportableLayerName))
             {
@@ -82,21 +102,66 @@ public class Gun : MonoBehaviour {
         canTeleport = false;
     }
 
+    public void ShootKeyBall()
+    {
+        // Parent eklenebilir.
+        GameObject keyBallObj = Instantiate(keyBallPref, muzzle.position, Quaternion.identity);
+
+        // Direction'u ayarla
+        keyBallObj.GetComponent<Rigidbody>().AddForce(ray.direction * ballShootSpeed, ForceMode.Impulse);
+
+        canGetKeyBall = true;
+        ChangeMatColor(mRPickup, Color.white);
+    }
+
     public void PickUp()
     {
         if (heldObj == null)
         {
+
             RaycastHit hit;
-            if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, pickupRange, pullableObjectLayer))
+            if (Physics.Raycast(camTransform.position, ray.direction, out hit, pickupRange))
             {
-                // Pickup
-                PickupObject(hit.transform.gameObject);
+                if(hit.collider.gameObject.layer == LayerMask.NameToLayer(pullableObjectLayer))
+                {
+                    GameObject hitObj = hit.collider.gameObject;
+                    if (hitObj.CompareTag("Cube"))
+                    {
+                        // Pickup
+                        PickupObject(hit.transform.gameObject);
 
-                canPickup = false;
-                canTeleport = false;
+                        canTeleport = false;
 
-                ChangeMatColor(mRPickup, Color.red);
-                ChangeMatColor(mRTeleport, Color.red);
+                        ChangeMatColor(mRTeleport, Color.red);
+                    }
+                    else if (hitObj.CompareTag("KeyBall") && canGetKeyBall)
+                    {
+
+                        if (hitObj.GetComponent<KeyBallChecker>().onKeyHole)
+                        {
+                            KeyHole keyHoleScr = hitObj.transform.GetComponentInParent<KeyHole>();
+                            if (keyHoleScr.IsActive)
+                            {
+                                // Get Keyball
+                                canGetKeyBall = false;
+                                ChangeMatColor(mRPickup, Color.blue);
+                                keyHoleScr.getKeyBall();
+                            }
+                        }
+                        else
+                        {
+                            // Get Keyball
+                            canGetKeyBall = false;
+                            ChangeMatColor(mRPickup, Color.blue);
+                            Destroy(hitObj);
+                            // Set Animations
+                        }
+                    }
+                    else if (hitObj.CompareTag("KeyBall") && !canGetKeyBall)
+                    {
+                        ShootKeyBall();
+                    }
+                }
             }
         }
         else
@@ -104,10 +169,8 @@ public class Gun : MonoBehaviour {
             // Drop
             DropObject();
 
-            canPickup = true;
             canTeleport = true;
 
-            ChangeMatColor(mRPickup, Color.green);
             ChangeMatColor(mRTeleport, Color.green);
         }
     }
@@ -141,8 +204,8 @@ public class Gun : MonoBehaviour {
 
     Vector3 GetShootingDirection()
     {
-        Vector3 targetPos = cam.position + cam.forward * range;
-        Vector3 direction = targetPos - cam.position;
+        Vector3 targetPos = camTransform.position + camTransform.forward * range;
+        Vector3 direction = targetPos - camTransform.position;
 
         return direction.normalized;
     }

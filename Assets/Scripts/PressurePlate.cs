@@ -5,14 +5,13 @@ public class PressurePlate : MonoBehaviour
     [SerializeField] private DoorController doorController;
     private bool _isPressed;
     private Animator pressPlateAnim;
-
     private int activatorCount;
 
     public bool IsPressed => _isPressed;
 
     void Start()
     {
-        pressPlateAnim = GetComponent<Animator>();
+        pressPlateAnim = transform.GetComponentInChildren<Animator>();
     }
 
     private void OnTriggerEnter(Collider other)
