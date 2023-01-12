@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 public class PauseMenu : MonoBehaviour
 {
     [SerializeField] private GameObject pauseMenu;
-    private bool isPaused;
 
     private void Awake()
     {
@@ -15,21 +14,21 @@ public class PauseMenu : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (!isPaused)
+            if (!GameManager.isGamePaused)
             {
                 Cursor.lockState = CursorLockMode.Confined;
                 Cursor.visible = true;
                 Time.timeScale = 0f;
-                isPaused = true;
-                pauseMenu.SetActive(isPaused);
+                GameManager.isGamePaused = true;
+                pauseMenu.SetActive(true);
             }
             else
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 Time.timeScale = 1f;
-                isPaused = false;
-                pauseMenu.SetActive(isPaused);
+                GameManager.isGamePaused = false;
+                pauseMenu.SetActive(false);
             }
         }
     }

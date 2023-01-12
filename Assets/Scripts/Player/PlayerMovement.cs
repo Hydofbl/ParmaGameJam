@@ -9,6 +9,7 @@ public class PlayerMovement : MonoBehaviour {
     
     //Other
     private Rigidbody rb;
+    private bool isGamePaused => GameManager.isGamePaused;
 
     [Header("Rotation and look")]
     [SerializeField] private float xRotation;
@@ -50,12 +51,15 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     
-    private void FixedUpdate() {
-        Movement();
+    private void FixedUpdate()
+    {
+        if (!isGamePaused)
+            Movement();
     }
 
     private void Update() {
-        Look();
+        if(!isGamePaused)
+            Look();
     }
 
     public void OnJumpPressed()

@@ -77,6 +77,10 @@ public class Gun : MonoBehaviour {
             else
                 crosshair.color = Color.white;
         }
+        else
+        {
+            crosshair.color = Color.white;
+        }
     }
 
     public void ShootTeleport ()
