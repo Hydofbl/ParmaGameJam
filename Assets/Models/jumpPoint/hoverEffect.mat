@@ -119,8 +119,8 @@ Material:
     - _Surface: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
-    - _hoverEffectEmis: 0
-    - _hoverEffectTime: 723.1343
+    - _hoverEffectEmis: 1.5
+    - _hoverEffectTime: 6534.778
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

@@ -127,7 +127,6 @@ public class Gun : MonoBehaviour {
     {
         if (heldObj == null)
         {
-
             RaycastHit hit;
             if (Physics.Raycast(camTransform.position, ray.direction, out hit, pickupRange))
             {
@@ -146,31 +145,28 @@ public class Gun : MonoBehaviour {
                     }
                     else if (hitObj.CompareTag("KeyBall") && canGetKeyBall)
                     {
-                        if (hitObj.GetComponent<KeyBallChecker>().onKeyHole)
-                        {
-                            KeyHole keyHoleScr = hitObj.transform.GetComponentInParent<KeyHole>();
-                            if (keyHoleScr.IsActive)
-                            {
-                                // Get Keyball
-                                canGetKeyBall = false;
-                                ChangeMatColor(mRPickup, Color.blue);
-                                keyHoleScr.getKeyBall();
-                                isHoldingObject = true;
-                            }
-                        }
-                        else
+                        // Get Keyball from ground
+                        canGetKeyBall = false;
+                        ChangeMatColor(mRPickup, Color.blue);
+                        Destroy(hitObj);
+                        isHoldingObject = true;
+                        // Set Animations
+                    }
+                    else if (hitObj.CompareTag("KeyHole"))
+                    {
+                        KeyHole keyHoleScr = hitObj.transform.GetComponentInParent<KeyHole>();
+                        if (keyHoleScr.IsActive && canGetKeyBall)
                         {
                             // Get Keyball
                             canGetKeyBall = false;
                             ChangeMatColor(mRPickup, Color.blue);
-                            Destroy(hitObj);
+                            keyHoleScr.getKeyBall();
                             isHoldingObject = true;
-                            // Set Animations
                         }
-                    }
-                    else if (hitObj.CompareTag("KeyBall") && !canGetKeyBall)
-                    {
-                        ShootKeyBall();
+                        else if(!keyHoleScr.IsActive && !canGetKeyBall) // Second condition additionally means if we have keyball
+                        {
+                            ShootKeyBall();
+                        }
                     }
                 }
             }
